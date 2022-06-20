@@ -1,0 +1,180 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/unix/solarish/illumos.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>illumos.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script src="../../../../crates.js"></script><script defer src="../../../../main.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../libc/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
+        </a><h2 class="location"></h2>
+    </nav>
+    <nav class="sidebar"><a class="sidebar-logo" href="../../../../libc/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../libc/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
+                                <a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div>
+                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+</pre><pre class="rust"><code><span class="macro">s!</span> {
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">shmid_ds</span> {
+        <span class="kw">pub</span> <span class="ident">shm_perm</span>: <span class="ident">::ipc_perm</span>,
+        <span class="kw">pub</span> <span class="ident">shm_segsz</span>: <span class="ident">::size_t</span>,
+        <span class="kw">pub</span> <span class="ident">shm_amp</span>: <span class="kw-2">*mut</span> <span class="ident">::c_void</span>,
+        <span class="kw">pub</span> <span class="ident">shm_lkcnt</span>: <span class="ident">::c_ushort</span>,
+        <span class="kw">pub</span> <span class="ident">shm_lpid</span>: <span class="ident">::pid_t</span>,
+        <span class="kw">pub</span> <span class="ident">shm_cpid</span>: <span class="ident">::pid_t</span>,
+        <span class="kw">pub</span> <span class="ident">shm_nattch</span>: <span class="ident">::shmatt_t</span>,
+        <span class="kw">pub</span> <span class="ident">shm_cnattch</span>: <span class="ident">::c_ulong</span>,
+        <span class="kw">pub</span> <span class="ident">shm_atime</span>: <span class="ident">::time_t</span>,
+        <span class="kw">pub</span> <span class="ident">shm_dtime</span>: <span class="ident">::time_t</span>,
+        <span class="kw">pub</span> <span class="ident">shm_ctime</span>: <span class="ident">::time_t</span>,
+        <span class="kw">pub</span> <span class="ident">shm_pad4</span>: [<span class="ident">i64</span>; <span class="number">4</span>],
+    }
+
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">fil_info</span> {
+        <span class="kw">pub</span> <span class="ident">fi_flags</span>: <span class="ident">::c_int</span>,
+        <span class="kw">pub</span> <span class="ident">fi_pos</span>: <span class="ident">::c_int</span>,
+        <span class="kw">pub</span> <span class="ident">fi_name</span>: [<span class="ident">::c_char</span>; <span class="ident">::FILNAME_MAX</span> <span class="kw">as</span> <span class="ident">usize</span>],
+    }
+}
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">AF_LOCAL</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">1</span>; <span class="comment">// AF_UNIX</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">AF_FILE</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">1</span>; <span class="comment">// AF_UNIX</span>
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">EFD_SEMAPHORE</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">0x1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">EFD_NONBLOCK</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">0x800</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">EFD_CLOEXEC</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">0x80000</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TCP_KEEPIDLE</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">34</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TCP_KEEPCNT</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">35</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TCP_KEEPINTVL</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">36</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TCP_CONGESTION</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">37</span>;
+
+<span class="comment">// These constants are correct for 64-bit programs or 32-bit programs that are</span>
+<span class="comment">// not using large-file mode.  If Rust ever supports anything other than 64-bit</span>
+<span class="comment">// compilation on illumos, this may require adjustment:</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">F_OFD_GETLK</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">47</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">F_OFD_SETLK</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">48</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">F_OFD_SETLKW</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">49</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">F_FLOCK</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">53</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">F_FLOCKW</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">54</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FIL_ATTACH</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">0x1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FIL_DETACH</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">0x2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FIL_LIST</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">0x3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FILNAME_MAX</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">32</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FILF_PROG</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">0x1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FILF_AUTO</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">0x2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FILF_BYPASS</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">0x4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SOL_FILTER</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">0xfffc</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">MR_HDR_AOUT</span>: <span class="ident">::c_uint</span> <span class="op">=</span> <span class="number">0x3</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">B1000000</span>: <span class="ident">::speed_t</span> <span class="op">=</span> <span class="number">24</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">B1152000</span>: <span class="ident">::speed_t</span> <span class="op">=</span> <span class="number">25</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">B1500000</span>: <span class="ident">::speed_t</span> <span class="op">=</span> <span class="number">26</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">B2000000</span>: <span class="ident">::speed_t</span> <span class="op">=</span> <span class="number">27</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">B2500000</span>: <span class="ident">::speed_t</span> <span class="op">=</span> <span class="number">28</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">B3000000</span>: <span class="ident">::speed_t</span> <span class="op">=</span> <span class="number">29</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">B3500000</span>: <span class="ident">::speed_t</span> <span class="op">=</span> <span class="number">30</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">B4000000</span>: <span class="ident">::speed_t</span> <span class="op">=</span> <span class="number">31</span>;
+
+<span class="comment">// sys/systeminfo.h</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SI_ADDRESS_WIDTH</span>: <span class="ident">::c_int</span> <span class="op">=</span> <span class="number">520</span>;
+
+<span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">eventfd</span>(<span class="ident">init</span>: <span class="ident">::c_uint</span>, <span class="ident">flags</span>: <span class="ident">::c_int</span>) -&gt; <span class="ident">::c_int</span>;
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mincore</span>(<span class="ident">addr</span>: <span class="ident">::caddr_t</span>, <span class="ident">len</span>: <span class="ident">::size_t</span>, <span class="ident">vec</span>: <span class="kw-2">*mut</span> <span class="ident">::c_char</span>) -&gt; <span class="ident">::c_int</span>;
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pset_bind_lwp</span>(
+        <span class="ident">pset</span>: <span class="ident">::psetid_t</span>,
+        <span class="ident">id</span>: <span class="ident">::id_t</span>,
+        <span class="ident">pid</span>: <span class="ident">::pid_t</span>,
+        <span class="ident">opset</span>: <span class="kw-2">*mut</span> <span class="ident">::psetid_t</span>,
+    ) -&gt; <span class="ident">::c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pset_getloadavg</span>(<span class="ident">pset</span>: <span class="ident">::psetid_t</span>, <span class="ident">load</span>: <span class="kw-2">*mut</span> <span class="ident">::c_double</span>, <span class="ident">num</span>: <span class="ident">::c_int</span>) -&gt; <span class="ident">::c_int</span>;
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">preadv</span>(<span class="ident">fd</span>: <span class="ident">::c_int</span>, <span class="ident">iov</span>: <span class="kw-2">*const</span> <span class="ident">::iovec</span>, <span class="ident">iovcnt</span>: <span class="ident">::c_int</span>, <span class="ident">offset</span>: <span class="ident">::off_t</span>) -&gt; <span class="ident">::ssize_t</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pwritev</span>(<span class="ident">fd</span>: <span class="ident">::c_int</span>, <span class="ident">iov</span>: <span class="kw-2">*const</span> <span class="ident">::iovec</span>, <span class="ident">iovcnt</span>: <span class="ident">::c_int</span>, <span class="ident">offset</span>: <span class="ident">::off_t</span>)
+        -&gt; <span class="ident">::ssize_t</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">getpagesizes2</span>(<span class="ident">pagesize</span>: <span class="kw-2">*mut</span> <span class="ident">::size_t</span>, <span class="ident">nelem</span>: <span class="ident">::c_int</span>) -&gt; <span class="ident">::c_int</span>;
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="libc" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (bb8c2f411 2022-06-19)" ></div>
+</body></html>
